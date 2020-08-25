@@ -1692,17 +1692,20 @@ class ColorbarPlot(ElementPlot):
         Number of discrete colors to use when colormapping or a set of color
         intervals defining the range of values to map each color to.""")
 
+    cformatter = param.ClassSelector(
+        default=None, class_=(util.basestring, TickFormatter, FunctionType), doc="""
+        Formatter for ticks along the colorbar axis.""")
+
     clabel = param.String(default=None, doc="""
         An explicit override of the color bar label, if set takes precedence
         over the title key in colorbar_opts.""")
 
     clim = param.Tuple(default=(np.nan, np.nan), length=2, doc="""
-       User-specified colorbar axis range limits for the plot, as a tuple (low,high).
-       If specified, takes precedence over data and dimension ranges.""")
+        User-specified colorbar axis range limits for the plot, as a tuple (low,high).
+        If specified, takes precedence over data and dimension ranges.""")
 
-    cformatter = param.ClassSelector(
-        default=None, class_=(util.basestring, TickFormatter, FunctionType), doc="""
-        Formatter for ticks along the colorbar axis.""")
+    cnorm = param.ObjectSelector(default='linear', objects=['linear', 'log', 'eqhist'], doc="""
+        Color normalization applied during colormapping.""")
 
     colorbar = param.Boolean(default=False, doc="""
         Whether to display a colorbar.""")
@@ -1923,8 +1926,9 @@ class ColorbarPlot(ElementPlot):
 
     def _get_cmapper_opts(self, low, high, factors, colors):
         if factors is None:
-            colormapper = LinearColorMapper
-            if self.logz:
+            if self.cnorm == 'linear':
+                colormapper = LinearColorMapper
+            if self.cnorm == 'log' or self.logz:
                 colormapper = LogColorMapper
                 if util.is_int(low) and util.is_int(high) and low == 0:
                     low = 1
@@ -1938,6 +1942,9 @@ class ColorbarPlot(ElementPlot):
                         "lower bound on the color dimension or using "
                         "the `clim` option."
                     )
+            elif self.cnorm == 'eqhist':
+                from bokeh.models import EqHistColorMapper
+                colormapper = EqHistColorMapper
             if isinstance(low, (bool, np.bool_)): low = int(low)
             if isinstance(high, (bool, np.bool_)): high = int(high)
             # Pad zero-range to avoid breaking colorbar (as of bokeh 1.0.4)

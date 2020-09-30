@@ -1704,7 +1704,7 @@ class ColorbarPlot(ElementPlot):
         User-specified colorbar axis range limits for the plot, as a tuple (low,high).
         If specified, takes precedence over data and dimension ranges.""")
 
-    cnorm = param.ObjectSelector(default='linear', objects=['linear', 'log', 'eqhist'], doc="""
+    cnorm = param.ObjectSelector(default='linear', objects=['linear', 'log', 'eq_hist'], doc="""
         Color normalization to be applied during colormapping.""")
 
     colorbar = param.Boolean(default=False, doc="""
@@ -1942,7 +1942,7 @@ class ColorbarPlot(ElementPlot):
                         "lower bound on the color dimension or using "
                         "the `clim` option."
                     )
-            elif self.cnorm == 'eqhist':
+            elif self.cnorm == 'eq_hist':
                 from bokeh.models import EqHistColorMapper
                 colormapper = EqHistColorMapper
             if isinstance(low, (bool, np.bool_)): low = int(low)
